@@ -1,7 +1,7 @@
 databases:
   - name: contraplano-db
     databaseName: contraplano
-    user: postgres
+    user: contraplano_user
     plan: free
     region: ohio
 
@@ -13,26 +13,24 @@ services:
     dockerfilePath: backend/Dockerfile
     plan: free
     region: ohio
+
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: contraplano-db
           property: connectionString
-      # Render dynamically assigns a PORT, the docker container must respect it or expose its own.
-      # uvicorn can be started using the PORT env variable if needed, but our Dockerfile currently has it hardcoded.
 
   - type: web
     name: contraplano-frontend
     env: static
     plan: free
-    region: ohio
+
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
+
     envVars:
       - key: VITE_API_URL
         fromService:
           type: web
           name: contraplano-backend
           envVarKey: RENDER_EXTERNAL_URL
-          # RENDER_EXTERNAL_URL es una variable automática que inyecta Render con la URL pública del servicio.
-          # Como la API necesita /api, lo añadiremos en un script o directamente configuramos la ruta base.
