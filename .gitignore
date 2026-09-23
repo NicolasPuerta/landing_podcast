@@ -1,0 +1,12 @@
+node_modules/
+dist/
+build/
+.env
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.DS_Store
+.dockerignore
+postgres_data/
