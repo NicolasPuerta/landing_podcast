@@ -26,15 +26,49 @@ export default function ChaptersSection() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {chapters.length > 0 ? (
-            chapters.map((chapter) => (
-              <div key={chapter.id} className="group cursor-none">
-                <a href={chapter.video_url || '#'} target="_blank" rel="noopener noreferrer" className="block aspect-video bg-gris2 mb-6 relative overflow-hidden border border-blanco/5 transition-colors group-hover:border-oro/50">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border border-blanco/20 flex items-center justify-center group-hover:bg-oro group-hover:text-negro group-hover:border-oro transition-all">
-                      ▶
-                    </div>
+            chapters.map((chapter, index) => {
+              // Extract YouTube ID if possible
+              const getYouTubeID = (url) => {
+                if (!url) return null;
+                const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+                return match ? match[1] : null;
+              };
+              
+              const ytId = getYouTubeID(chapter.video_url);
+              const isFirst = index === 0;
+
+              return (
+              <div key={chapter.id} className={`group ${isFirst ? 'md:col-span-3 lg:col-span-3' : 'cursor-none'}`}>
+                {isFirst && ytId ? (
+                  // Autoplay video for the first chapter
+                  <div className="block aspect-video bg-gris2 mb-6 relative overflow-hidden border border-blanco/5">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${ytId}?autoplay=1&mute=1`}
+                      title={chapter.title}
+                      className="absolute top-0 left-0 w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
                   </div>
-                </a>
+                ) : (
+                  // Thumbnail + Link for the rest
+                  <a href={chapter.video_url || '#'} target="_blank" rel="noopener noreferrer" className="block aspect-video bg-gris2 mb-6 relative overflow-hidden border border-blanco/5 transition-colors group-hover:border-oro/50">
+                    {ytId ? (
+                      <img 
+                        src={`https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`} 
+                        alt={chapter.title} 
+                        className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" 
+                        onError={(e) => { e.target.src = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`; }}
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full border border-blanco/20 bg-negro/50 backdrop-blur-sm flex items-center justify-center group-hover:bg-oro group-hover:text-negro group-hover:border-oro transition-all z-10">
+                        ▶
+                      </div>
+                    </div>
+                  </a>
+                )}
+                
                 <div className="flex gap-4">
                   <span className="text-oro font-bebas text-2xl mt-1">
                     {String(chapter.order).padStart(2, '0')}
@@ -49,7 +83,7 @@ export default function ChaptersSection() {
                   </div>
                 </div>
               </div>
-            ))
+            )})
           ) : (
             <p className="text-white">Cargando capítulos...</p>
           )}
